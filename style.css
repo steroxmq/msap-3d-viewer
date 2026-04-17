@@ -323,3 +323,167 @@ body {
     color: #e2e8f0;
     backdrop-filter: blur(8px);
 }
+
+.hero,
+.models,
+.viewer,
+.info {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: fadeUp 0.9s ease forwards;
+}
+
+.hero {
+    animation-delay: 0.05s;
+}
+
+.models {
+    animation-delay: 0.18s;
+}
+
+.viewer {
+    animation-delay: 0.32s;
+}
+
+.info {
+    animation-delay: 0.46s;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.viewer-box::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 16px;
+    background: conic-gradient(from 0deg,
+            rgba(125, 211, 252, 0.0),
+            rgba(125, 211, 252, 0.9),
+            rgba(255, 136, 204, 0.9),
+            rgba(124, 255, 161, 0.9),
+            rgba(125, 211, 252, 0.0));
+    filter: blur(14px);
+    opacity: 0.55;
+    z-index: 0;
+    animation: spinAura 6s linear infinite;
+}
+
+.viewer-box>* {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes spinAura {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.viewer-box::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        radial-gradient(circle at 50% 50%, transparent 55%, rgba(15, 23, 42, 0.28) 100%);
+    background-size: 28px 28px, 28px 28px, 100% 100%;
+    opacity: 0.35;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 1;
+    animation: gridFloat 8s linear infinite;
+}
+
+#viewer-canvas {
+    z-index: 1;
+}
+
+.viewer-overlay {
+    z-index: 2;
+}
+
+@keyframes gridFloat {
+    from {
+        background-position: 0 0, 0 0, 0 0;
+    }
+
+    to {
+        background-position: 28px 14px, 14px 28px, 0 0;
+    }
+}
+
+.page-bg {
+    transition: background 0.6s ease;
+}
+
+.viewer-box {
+    transition: border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.viewer-glow {
+    transition: background 0.35s ease, left 0.12s linear, top 0.12s linear;
+}
+
+#viewer-status {
+    transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+}
+
+.active-card {
+    transform: translateY(-4px) scale(1.015);
+    box-shadow:
+        0 0 24px rgba(59, 130, 246, 0.18),
+        0 0 48px rgba(168, 85, 247, 0.12);
+    animation: activePulse 2.4s ease-in-out infinite;
+}
+
+@keyframes activePulse {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 24px rgba(59, 130, 246, 0.18),
+            0 0 48px rgba(168, 85, 247, 0.12);
+    }
+
+    50% {
+        box-shadow:
+            0 0 34px rgba(59, 130, 246, 0.28),
+            0 0 62px rgba(168, 85, 247, 0.18);
+    }
+}
+
+.info {
+    position: relative;
+    overflow: hidden;
+}
+
+.info::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 40%);
+    pointer-events: none;
+}
+
+.info-block {
+    position: relative;
+    z-index: 1;
+}

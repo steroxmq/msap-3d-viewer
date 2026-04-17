@@ -105,7 +105,9 @@ function createGeometry(index) {
 const material = new THREE.MeshStandardMaterial({
     color: 0x66ccff,
     metalness: 0.45,
-    roughness: 0.2
+    roughness: 0.2,
+    emissive: 0x66ccff,
+    emissiveIntensity: 0.18
 });
 
 const mesh = new THREE.Mesh(createGeometry(0), material);
@@ -130,6 +132,8 @@ function updateModel(index) {
 
     const colors = [0x7dd3fc, 0xff88cc, 0x7cffa1];
     material.color.setHex(colors[index]);
+    material.emissive.setHex(colors[index]);
+
 
     const lightColors = [0x7dd3fc, 0xff88cc, 0x7cffa1];
     directionalLight.color.setHex(lightColors[index]);
@@ -168,6 +172,21 @@ function updateModel(index) {
     ];
 
     pageBg.style.background = pageBackgrounds[index];
+
+    const statusBackgrounds = [
+        'rgba(14, 165, 233, 0.18)',
+        'rgba(236, 72, 153, 0.18)',
+        'rgba(34, 197, 94, 0.18)'
+    ];
+
+    const statusBorders = [
+        'rgba(125, 211, 252, 0.35)',
+        'rgba(255, 136, 204, 0.35)',
+        'rgba(124, 255, 161, 0.35)'
+    ];
+
+    viewerText.style.background = statusBackgrounds[index];
+    viewerText.style.borderColor = statusBorders[index];
 
     material.wireframe = index === 0;
     material.transparent = index === 0;
@@ -279,6 +298,8 @@ function animate3D() {
     mesh.scale.x += (targetScale - mesh.scale.x) * 0.08;
     mesh.scale.y += (targetScale - mesh.scale.y) * 0.08;
     mesh.scale.z += (targetScale - mesh.scale.z) * 0.08;
+    mesh.position.y = Math.sin(Date.now() * 0.002) * 0.08;
+    material.emissiveIntensity = 0.16 + (Math.sin(Date.now() * 0.004) + 1) * 0.08;
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate3D);
