@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="sk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prehliadač Gaussian Splattingu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style_step10_sk.css">
+</head>
+
+<body>
+  <div class="boot-overlay" id="boot-overlay" aria-hidden="true">
+    <div class="boot-grid"></div>
+    <div class="boot-panel">
+      <span class="boot-kicker">B-MSAP / Spustenie neurálnej rekonštrukcie</span>
+      <h2>Inicializácia scény Gaussian Splattingu</h2>
+      <p id="boot-message">Načítavajú sa metadáta záznamu...</p>
+      <div class="boot-progress">
+        <div class="boot-progress-bar" id="boot-progress-bar"></div>
+      </div>
+      <div class="boot-meta">
+        <span id="boot-percent">0%</span>
+        <span id="boot-phase">Synchronizácia záznamu</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-bg"></div>
+  <div class="noise-layer"></div>
+
+  <a href="javascript:history.back()" class="back-button">← Späť na portál</a>
+
+  <header class="hero">
+    <p class="eyebrow">B-MSAP / Interaktívny viewer a test reálneho assetu</p>
+    <h1>Prehliadač<br>Gaussian Splattingu</h1>
+    <p class="hero-text">
+      Filmový interaktívny koncept na prehliadanie rekonštrukcií Gaussian Splattingu v reálnom čase.
+      Navrhnutý tak, aby pôsobil ako prémiové research demo, nie ako školská výplň.
+    </p>
+
+    <div class="hero-badges">
+      <span class="badge">Realtime náhľad splatov</span>
+      <span class="badge">Boot sekvencia</span>
+      <span class="badge">Prepínanie fáz</span>
+      <span class="badge">Porovnávacie laboratórium</span>
+      <span class="badge">Filmové kamerové dráhy</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="models panel">
+      <div class="section-topline">Datasety</div>
+      <h2>Zachytené scény</h2>
+
+      <button class="card active-card" data-index="0" type="button">
+        <div class="card-top">
+          <span class="card-tag">01</span>
+          <span class="card-type">Interiér</span>
+        </div>
+        <h3>Apartmán</h3>
+        <p>Testovací interiérový GLTF asset načítaný z verejného zdroja pre overenie reálneho viewer pipeline.</p>
+      </button>
+
+      <button class="card" data-index="1" type="button">
+        <div class="card-top">
+          <span class="card-tag">02</span>
+          <span class="card-type">Portrét</span>
+        </div>
+        <h3>Sken hlavy</h3>
+        <p>Sken hlavy Lee Perry Smith ako realistickejší test samostatnej hlavy človeka.</p>
+      </button>
+
+      <button class="card" data-index="2" type="button">
+        <div class="card-top">
+          <span class="card-tag">03</span>
+          <span class="card-type">Artefakt</span>
+        </div>
+        <h3>Referenčný objekt</h3>
+        <p>Oficiálny testovací asset Lantern ako samostatný objekt na rotáciu a detailnú kontrolu.</p>
+      </button>
+
+      <div class="sidebar-divider"></div>
+
+
+      <div class="mini-stack">
+        <div class="mini-panel">
+          <span>Klávesnica</span>
+          <strong>X reset / O orbit / T statika</strong>
+        </div>
+        <div class="mini-panel">
+          <span>Priblíženie</span>
+          <strong>+ priblížiť / − oddialiť</strong>
+        </div>
+        <div class="mini-panel">
+          <span>Porovnanie</span>
+          <strong>Q vstup / W split / E výsledok</strong>
+        </div>
+        <div class="mini-panel">
+          <span>Kamera</span>
+          <strong>A hero / S kontrola / D prejazd</strong>
+        </div>
+        <div class="mini-panel">
+          <span>Vrstva modelu</span>
+          <strong>P = splaty zap/vyp / F fullscreen</strong>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="viewer panel">
+      <div class="viewer-header">
+        <div>
+          <div class="section-topline">Prehliadač</div>
+          <h2>Realtime neurálna scéna</h2>
+          <p class="viewer-subtitle">Interaktívny náhľad inšpirovaný modernými demo ukážkami Gaussian Splattingu</p>
+        </div>
+
+
+        <div class="viewer-controls">
+          <button class="control-btn" data-action="reset" type="button"><span class="btn-label">Reset</span><span
+              class="btn-kbd">X</span></button>
+          <button class="control-btn" data-action="orbit" type="button"><span class="btn-label">Orbit</span><span
+              class="btn-kbd">O</span></button>
+          <button class="control-btn" data-action="inspect" type="button"><span class="btn-label">Statický
+              režim</span><span class="btn-kbd">T</span></button>
+          <button class="control-btn" data-action="focus" type="button"><span class="btn-label">Priblížiť</span><span
+              class="btn-kbd">+</span></button>
+          <button class="control-btn" data-action="splats" type="button"><span class="btn-label">Skryť
+              splaty</span><span class="btn-kbd">P</span></button>
+          <button class="control-btn" data-action="fullscreen" type="button"><span class="btn-label">Celá
+              obrazovka</span><span class="btn-kbd">F</span></button>
+        </div>
+
+      </div>
+
+      <div class="metrics-strip">
+        <div class="metric-pill">
+          <span class="metric-label">Body</span>
+          <span class="metric-value" id="metric-points">48k</span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-label">Režim</span>
+          <span class="metric-value" id="metric-mode">Radiancia</span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-label">Záznam</span>
+          <span class="metric-value" id="metric-capture">24 pohľadov</span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-label">Latencia</span>
+          <span class="metric-value" id="metric-latency">14 ms</span>
+        </div>
+      </div>
+
+      <div class="stage-switcher" aria-label="Fázy renderu">
+        <button class="stage-btn active" data-stage="capture" type="button">Záznam</button>
+        <button class="stage-btn" data-stage="hybrid" type="button">Hybrid</button>
+        <button class="stage-btn" data-stage="radiance" type="button">Radiancia</button>
+      </div>
+
+      <div class="viewer-box" id="viewer-box">
+        <div id="viewer-canvas"></div>
+        <div class="transition-flash" id="transition-flash"></div>
+
+        <div class="viewer-overlay">
+          <div class="viewer-glow"></div>
+          <div class="corner corner-tl"></div>
+          <div class="corner corner-tr"></div>
+          <div class="corner corner-bl"></div>
+          <div class="corner corner-br"></div>
+
+          <div id="viewer-status">Aktívny dataset: Laboratórium</div>
+
+          <div class="viewer-guide" id="viewer-guide">
+            <div class="guide-head">
+              <span class="hud-label">Ako ovládať model</span>
+              <button class="guide-close" id="guide-close" type="button" aria-label="Skryť nápovedu">×</button>
+            </div>
+
+            <div class="guide-pills">
+              <div class="guide-pill">
+                <strong>Ťahaj myšou</strong>
+                <span>otočenie modelu</span>
+              </div>
+              <div class="guide-pill">
+                <strong>Koliesko / + / −</strong>
+                <span>priblíženie a oddialenie</span>
+              </div>
+              <div class="guide-pill">
+                <strong>Shift + ťah</strong>
+                <span>posun scény do strán</span>
+              </div>
+              <div class="guide-pill">
+                <strong>O / P / T / F / X</strong>
+                <span>orbit / splaty / statika / fullscreen / reset</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="guide-toggle" id="guide-toggle" type="button">Návod</button>
+
+          <div class="viewer-hud top-right">
+            <span>Ťahaním otáčať</span>
+            <span>Kolieskom priblížiť</span>
+            <span>Shift + ťah = posun · O/T/P/F/X · +/- zoom</span>
+          </div>
+
+          <div class="viewer-hud bottom-left">
+            <span class="hud-label">Kontrola</span>
+            <strong id="hud-quality">Vysoká vernosť</strong>
+          </div>
+
+          <div class="viewer-hud bottom-right">
+            <span class="hud-label">Stav scény</span>
+            <strong id="hud-state">Uzamknuté na dataset</strong>
+          </div>
+
+          <div class="viewer-hud mid-left compact">
+            <span class="hud-label">Rekonštrukcia</span>
+            <strong id="hud-recon">92%</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-shell">
+        <div class="timeline-head">
+          <div>
+            <span class="section-topline">Pipeline</span>
+            <h3>Priebeh rekonštrukcie</h3>
+          </div>
+          <span class="timeline-caption" id="timeline-caption">Zameranie fázy: finálny radiance render</span>
+        </div>
+
+        <div class="timeline-track">
+          <article class="timeline-step" data-flow="capture">
+            <span>01</span>
+            <strong>Záznam</strong>
+            <p>Viacpohľadové zdrojové snímky a prechod kamery.</p>
+          </article>
+          <article class="timeline-step" data-flow="align">
+            <span>02</span>
+            <strong>Zarovnanie</strong>
+            <p>Registrácia póz a riedka inicializácia.</p>
+          </article>
+          <article class="timeline-step" data-flow="optimize">
+            <span>03</span>
+            <strong>Optimalizácia</strong>
+            <p>Spresnenie hustoty a ladenie splatov.</p>
+          </article>
+          <article class="timeline-step active" data-flow="render">
+            <span>04</span>
+            <strong>Render</strong>
+            <p>Finálna neurálna vizualizácia a kontrola.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="camera-rail">
+        <div class="camera-rail-head">
+          <div>
+            <span class="section-topline">Pohyb kamery</span>
+            <h3>Predvoľby pohybu</h3>
+          </div>
+          <div class="camera-path-readout">
+            <span class="metric-label">Aktuálna dráha</span>
+            <strong id="camera-path-name">Hero oblúk</strong>
+          </div>
+        </div>
+
+        <div class="camera-paths">
+          <button class="path-btn active" data-path="hero" type="button">Hero oblúk</button>
+          <button class="path-btn" data-path="inspect" type="button">Orbit kontroly</button>
+          <button class="path-btn" data-path="dolly" type="button">Dolly prejazd</button>
+        </div>
+      </div>
+
+      <div class="comparison-shell">
+        <div class="comparison-head">
+          <div>
+            <span class="section-topline">Porovnávacie laboratórium</span>
+            <h3>Vstup vs neurálny výsledok</h3>
+            <p class="comparison-copy">Premeň prezentáciu na skutočné demo: zdrojové snímky, split analýza a finálny
+              splat render.</p>
+          </div>
+
+          <div class="comparison-toggle" aria-label="Comparison modes">
+            <button class="compare-btn" data-compare="input" type="button">Vstup</button>
+            <button class="compare-btn active" data-compare="split" type="button">Split</button>
+            <button class="compare-btn" data-compare="result" type="button">Výsledok</button>
+          </div>
+        </div>
+
+        <div class="comparison-stage" id="comparison-stage" data-mode="split">
+          <article class="compare-panel input-panel">
+            <div class="compare-media">
+              <div class="scan-grid"></div>
+              <div class="capture-stack">
+                <div class="frame-thumb"><span>F01</span><strong>Vpredu-vľavo</strong></div>
+                <div class="frame-thumb"><span>F02</span><strong>Prechod 02</strong></div>
+                <div class="frame-thumb"><span>F03</span><strong>Prechod 03</strong></div>
+                <div class="frame-thumb"><span>F04</span><strong>Prechod 04</strong></div>
+              </div>
+            </div>
+
+            <div class="compare-copy-block">
+              <span class="compare-kicker">Zdrojový vstup</span>
+              <h4 id="compare-left-title">Viacpohľadové vstupné snímky</h4>
+              <p id="compare-left-text">Surové kamerové zábery určujú pokrytie póz, spoľahlivosť siluety a textúrne
+                informácie ešte pred optimalizáciou splatov.</p>
+            </div>
+          </article>
+
+          <div class="compare-divider">
+            <span id="compare-mode-label">Split porovnanie</span>
+          </div>
+
+          <article class="compare-panel result-panel">
+            <div class="compare-media render-media">
+              <div class="render-orb"></div>
+              <div class="render-ring ring-a"></div>
+              <div class="render-ring ring-b"></div>
+              <div class="render-ring ring-c"></div>
+
+              <div class="render-stat">
+                <span>Dôvera neurálneho povrchu</span>
+                <strong id="compare-confidence">94%</strong>
+              </div>
+            </div>
+
+            <div class="compare-copy-block">
+              <span class="compare-kicker">Splat výstup</span>
+              <h4 id="compare-right-title">Pohľadovo závislý neurálny render</h4>
+              <p id="compare-right-text">Optimalizované Gaussian splaty spájajú hustotu, farbu a hĺbku do plynulej
+                realtime vizualizácie určenej na filmovú kontrolu.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="info panel">
+      <div class="section-topline">Informácie o datasete</div>
+      <h2>Diagnostika scény</h2>
+
+      <div class="info-block">
+        <span class="info-label">Názov</span>
+        <p id="info-name">Laboratórium</p>
+      </div>
+
+      <div class="info-block">
+        <span class="info-label">Typ</span>
+        <p id="info-type">Sken interiéru</p>
+      </div>
+
+      <div class="info-block">
+        <span class="info-label">Popis</span>
+        <p id="info-description">
+          Interiér reconstruction concept focused on volume perception, open space and navigation feel.
+        </p>
+      </div>
+
+      <div class="info-grid">
+        <div class="mini-info">
+          <span>Režim renderu</span>
+          <strong id="info-render">Radiance field</strong>
+        </div>
+        <div class="mini-info">
+          <span>Pohľady kamery</span>
+          <strong id="info-views">24</strong>
+        </div>
+        <div class="mini-info">
+          <span>Hustota splatov</span>
+          <strong id="info-density">Dense</strong>
+        </div>
+        <div class="mini-info">
+          <span>Stabilita</span>
+          <strong id="info-stability">98.2%</strong>
+        </div>
+        <div class="mini-info">
+          <span>Vrstva splatov</span>
+          <strong id="info-splats-state">Zapnutá</strong>
+        </div>
+      </div>
+
+      <div class="diagnostic-stack">
+        <div class="diag-card">
+          <span>Aktuálna fáza</span>
+          <strong id="diag-stage">Finálny radiance render</strong>
+        </div>
+        <div class="diag-card">
+          <span>Rozpočet snímky</span>
+          <strong id="diag-frame">Realtime</strong>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <section class="experience-band">
+    <article class="experience-hero panel">
+      <div>
+        <span class="section-topline">Prečo to teraz funguje silnejšie</span>
+        <h2>Od pekného prehliadača k presvedčivému produktovému demu</h2>
+      </div>
+      <p>
+        Stránka teraz predáva celý príbeh rekonštrukcie: boot, výber fáz, pohyb kamery aj priame
+        porovnanie medzi surovým záznamom a finálnym splat výstupom.
+      </p>
+    </article>
+
+    <div class="experience-grid">
+      <article class="experience-card panel">
+        <span class="section-topline">01 / Príbeh</span>
+        <h3>Research štýl rozprávania</h3>
+        <p>Rozhranie vysvetľuje, ako sa scéna skladá, namiesto toho, aby len ukazovalo svietiaci objekt uprostred.</p>
+      </article>
+
+      <article class="experience-card panel">
+        <span class="section-topline">02 / Prezentácia</span>
+        <h3>Filmový jazyk pohybu</h3>
+        <p>Kamerové dráhy dávajú prehliadaču jasný zámer a približujú ho k produktovému demu alebo vyleštenému
+          prototypu.</p>
+      </article>
+
+      <article class="experience-card panel">
+        <span class="section-topline">03 / Dôveryhodnosť</span>
+        <h3>Logika pred / po</h3>
+        <p>Porovnávacie laboratórium dáva používateľovi dôvod veriť pipeline rekonštrukcie, nie iba samotnému štýlu.</p>
+      </article>
+    </div>
+  </section>
+
+
+  <section class="ideas-panel panel">
+    <div class="ideas-head">
+      <div>
+        <span class="section-topline">Ďalší upgrade</span>
+        <h2>Čo sa ešte oplatí pridať</h2>
+      </div>
+      <p class="ideas-intro">
+        Nie ďalšie náhodné efekty, ale prvky, ktoré zvýšia dôveryhodnosť dema aj jeho prezentovateľnosť.
+      </p>
+    </div>
+
+    <div class="ideas-grid">
+      <article class="idea-card">
+        <span>01</span>
+        <h3>Skutočný split slider</h3>
+        <p>Interaktívny posúvač, kde bude naľavo vstup a napravo výsledný splat render v tom istom okne.</p>
+      </article>
+      <article class="idea-card">
+        <span>02</span>
+        <h3>Galéria zdrojových záberov</h3>
+        <p>Miniatúry skutočných fotografií alebo frame-ov, z ktorých rekonštrukcia vznikla. To hneď zvyšuje
+          vierohodnosť.</p>
+      </article>
+      <article class="idea-card">
+        <span>03</span>
+        <h3>Export screenshotu</h3>
+        <p>Tlačidlo na uloženie aktuálneho pohľadu modelu do PNG pre prezentáciu, report alebo odovzdanie.</p>
+      </article>
+      <article class="idea-card">
+        <span>04</span>
+        <h3>Prepínač kvality</h3>
+        <p>Low / High / Ultra hustota splatov s odlišnou latenciou a počtom bodov, aby demo pôsobilo technickejšie.</p>
+      </article>
+      <article class="idea-card">
+        <span>05</span>
+        <h3>Prezentačný režim</h3>
+        <p>Automatický fullscreen walkthrough bez bočných panelov pre rýchlu ukážku na hodine alebo pri obhajobe.</p>
+      </article>
+    </div>
+  </section>
+
+  <script>
+    window.__viewerAppStarted = false;
+    window.__viewerModuleRequested = false;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        if (window.__viewerAppStarted) return;
+
+        const overlay = document.getElementById('boot-overlay');
+        const panel = overlay?.querySelector('.boot-panel');
+        const msg = document.getElementById('boot-message');
+        const phase = document.getElementById('boot-phase');
+        const percent = document.getElementById('boot-percent');
+        const bar = document.getElementById('boot-progress-bar');
+
+        if (window.location.protocol === 'file:') {
+          if (msg) msg.innerHTML = 'Táto verzia potrebuje spustenie cez <strong>lokálny server</strong>, nie priamo otvorením HTML súboru z disku.';
+          if (phase) phase.textContent = 'file:// blokovanie';
+          if (percent) percent.textContent = 'Chyba';
+          if (bar) bar.style.width = '100%';
+          if (panel && !document.getElementById('boot-help')) {
+            const help = document.createElement('div');
+            help.id = 'boot-help';
+            help.style.marginTop = '18px';
+            help.style.fontSize = '15px';
+            help.style.lineHeight = '1.65';
+            help.innerHTML = 'Spusti projekt cez <strong>localhost server</strong>. <br><br><a href="index_step7_sk.html" style="color:#9fdcff">Otvoriť stabilnú fallback verziu bez externého modelu</a>';
+            panel.appendChild(help);
+          }
+          return;
+        }
+
+        if (msg) msg.innerHTML = 'Projekt beží cez <strong>localhost</strong>, ale modul alebo externé importy sa nenačítali včas. Skontroluj internet / CDN importy.';
+        if (phase) phase.textContent = 'Modul alebo CDN import zlyhal';
+        if (percent) percent.textContent = 'Chyba';
+        if (bar) bar.style.width = '100%';
+        if (panel && !document.getElementById('boot-help')) {
+          const help = document.createElement('div');
+          help.id = 'boot-help';
+          help.style.marginTop = '18px';
+          help.style.fontSize = '15px';
+          help.style.lineHeight = '1.65';
+          help.innerHTML = 'Toto už nie je problém s Live Serverom. Je to problém s načítaním <strong>module scriptu</strong> alebo CDN importov. <br><br><a href="index_step7_sk.html" style="color:#9fdcff">Otvoriť stabilnú fallback verziu bez externého modelu</a>';
+          panel.appendChild(help);
+        }
+      }, 8000);
+    });
+  </script>
+  <script>
+    window.__viewerModuleRequested = true;
+  </script>
+
+  <script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+  <script type="module" src="script_step10_sk.js"></script>
+</body>
+
+</html>
